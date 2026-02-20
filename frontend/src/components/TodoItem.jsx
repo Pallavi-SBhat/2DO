@@ -1,38 +1,57 @@
-import { Trash2, Check, Circle } from 'lucide-react';
+import { Check, Trash2 } from "lucide-react";
 
 function TodoItem({ todo, onToggle, onDelete }) {
   return (
-    <div className="group p-4 hover:bg-gray-50 transition-colors">
+    <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-all duration-200 group">
+
+      {/* LEFT SIDE */}
       <div className="flex items-center gap-4">
+
+        {/* CLEAR CHECKBOX STYLE */}
         <button
           onClick={() => onToggle(todo.id, !todo.completed)}
-          className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-            todo.completed
-              ? 'bg-green-500 border-green-500'
-              : 'border-gray-300 hover:border-blue-500'
-          }`}
+          className={`
+            w-7 h-7 flex items-center justify-center
+            rounded-md border-2 cursor-pointer
+            transition-all duration-200
+            ${
+              todo.completed
+                ? "bg-green-500 border-green-500"
+                : "border-gray-400 hover:border-indigo-500 hover:bg-indigo-50"
+            }
+          `}
         >
-          {todo.completed && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+          {todo.completed && (
+            <Check
+              size={18}
+              className="text-white"
+              strokeWidth={3}
+            />
+          )}
         </button>
 
+        {/* TASK TEXT */}
         <span
-          className={`flex-1 text-lg transition-all ${
-            todo.completed
-              ? 'text-gray-400 line-through'
-              : 'text-gray-800'
-          }`}
+          className={`
+            text-lg transition-all
+            ${
+              todo.completed
+                ? "line-through text-gray-400"
+                : "text-gray-800"
+            }
+          `}
         >
           {todo.title}
         </span>
-
-        <button
-          onClick={() => onDelete(todo.id)}
-          className="flex-shrink-0 p-2 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-50 rounded-lg transition-all"
-          title="Delete task"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
       </div>
+
+      {/* DELETE BUTTON */}
+      <button
+        onClick={() => onDelete(todo.id)}
+        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition"
+      >
+        <Trash2 size={18} />
+      </button>
     </div>
   );
 }

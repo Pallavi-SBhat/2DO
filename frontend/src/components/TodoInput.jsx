@@ -1,32 +1,63 @@
-import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { useState } from "react";
+import { Plus } from "lucide-react";
 
 function TodoInput({ onAdd }) {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (input.trim()) {
       onAdd(input.trim());
-      setInput('');
+      setInput("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
+    <form
+      onSubmit={handleSubmit}
+      className="flex gap-4 items-center"
+    >
       <input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="What needs to be done?"
-        className="flex-1 px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+        className="
+          flex-1
+          px-5 py-3
+          text-lg
+          text-gray-800
+          bg-white
+          placeholder-gray-400
+          border border-gray-300
+          rounded-2xl
+          shadow-sm
+          focus:outline-none
+          focus:ring-2
+          focus:ring-indigo-500
+          focus:border-indigo-500
+          transition
+        "
       />
+
       <button
         type="submit"
-        className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 active:scale-95 transition-all font-medium flex items-center gap-2 shadow-lg shadow-blue-500/30"
+        className="
+          flex items-center gap-2
+          px-6 py-3
+          bg-gradient-to-r from-indigo-600 to-purple-600
+          text-white
+          font-semibold
+          rounded-2xl
+          shadow-lg
+          hover:scale-105
+          hover:shadow-xl
+          active:scale-95
+          transition-all
+        "
       >
-        <Plus className="w-5 h-5" />
-        Add Task
+        <Plus size={18} />
+        Add
       </button>
     </form>
   );

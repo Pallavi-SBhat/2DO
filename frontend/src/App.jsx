@@ -1,201 +1,222 @@
-import { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase.js';
-import { Plus, Trash2, Check, Circle } from 'lucide-react';
-import TodoItem from './components/TodoItem.jsx';
-import TodoInput from './components/TodoInput.jsx';
+import { useState, useEffect } from "react";
+import { Circle } from "lucide-react";
+import TodoItem from "./components/TodoItem.jsx";
+import TodoInput from "./components/TodoInput.jsx";
 
 function App() {
   const [todos, setTodos] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
 
+
+    // FETCH TODOS
+ 
   useEffect(() => {
     fetchTodos();
   }, []);
 
   const fetchTodos = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('todos')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching todos:', error);
-    } else {
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:4000/api/todos");
+      const data = await res.json();
       setTodos(data || []);
+    } catch (error) {
+      console.error("Error fetching todos:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+
+    //  ADD TODO
+ 
   const addTodo = async (title) => {
-    const { data, error } = await supabase
-      .from('todos')
-      .insert([{ title, completed: false }])
-      .select()
-      .single();
+    try {
+      const res = await fetch("http://localhost:4000/api/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title }),
+      });
 
-    if (error) {
-      console.error('Error adding todo:', error);
-    } else if (data) {
-      setTodos([data, ...todos]);
+      const newTodo = await res.json();
+      setTodos([newTodo, ...todos]);
+    } catch (error) {
+      console.error("Error adding todo:", error);
     }
   };
 
+  /* =========================
+     TOGGLE TODO
+  ========================= */
   const toggleTodo = async (id, completed) => {
-    const { error } = await supabase
-      .from('todos')
-      .update({ completed })
-      .eq('id', id);
+    try {
+      await fetch(`http://localhost:4000/api/todos/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ completed }),
+      });
 
-    if (error) {
-      console.error('Error updating todo:', error);
-    } else {
-      setTodos(todos.map(todo =>
-        todo.id === id ? { ...todo, completed } : todo
-      ));
+      setTodos(
+        todos.map((todo) =>
+          todo.id === id ? { ...todo, completed } : todo
+        )
+      );
+    } catch (error) {
+      console.error("Error updating todo:", error);
     }
   };
 
+  /* =========================
+     DELETE TODO
+  ========================= */
   const deleteTodo = async (id) => {
-    const { error } = await supabase
-      .from('todos')
-      .delete()
-      .eq('id', id);
+    try {
+      await fetch(`http://localhost:4000/api/todos/${id}`, {
+        method: "DELETE",
+      });
 
-    if (error) {
-      console.error('Error deleting todo:', error);
-    } else {
-      setTodos(todos.filter(todo => todo.id !== id));
+      setTodos(todos.filter((todo) => todo.id !== id));
+    } catch (error) {
+      console.error("Error deleting todo:", error);
     }
   };
 
+  /* =========================
+     CLEAR COMPLETED
+  ========================= */
   const clearCompleted = async () => {
-    const completedIds = todos.filter(todo => todo.completed).map(todo => todo.id);
+    const completedTodos = todos.filter((todo) => todo.completed);
 
-    const { error } = await supabase
-      .from('todos')
-      .delete()
-      .in('id', completedIds);
+    try {
+      for (let todo of completedTodos) {
+        await fetch(`http://localhost:4000/api/todos/${todo.id}`, {
+          method: "DELETE",
+        });
+      }
 
-    if (error) {
-      console.error('Error clearing completed todos:', error);
-    } else {
-      setTodos(todos.filter(todo => !todo.completed));
+      setTodos(todos.filter((todo) => !todo.completed));
+    } catch (error) {
+      console.error("Error clearing completed todos:", error);
     }
   };
 
-  const filteredTodos = todos.filter(todo => {
-    if (filter === 'active') return !todo.completed;
-    if (filter === 'completed') return todo.completed;
+  /* =========================
+     FILTER LOGIC
+  ========================= */
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "active") return !todo.completed;
+    if (filter === "completed") return todo.completed;
     return true;
   });
 
-  const activeTodosCount = todos.filter(todo => !todo.completed).length;
-  const completedTodosCount = todos.filter(todo => todo.completed).length;
+  const activeTodosCount = todos.filter((todo) => !todo.completed).length;
+  const completedTodosCount = todos.filter((todo) => todo.completed).length;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-800 mb-2">My Tasks</h1>
-          <p className="text-gray-600">Organize your day, one task at a time</p>
-        </div>
+ return (
+  <div className="min-h-screen w-full bg-gradient-to-br from-indigo-100 via-white to-purple-100 py-12 px-6">
+    <div className="w-full max-w-6xl mx-auto">
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          <TodoInput onAdd={addTodo} />
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setFilter('all')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    filter === 'all'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  All ({todos.length})
-                </button>
-                <button
-                  onClick={() => setFilter('active')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    filter === 'active'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Active ({activeTodosCount})
-                </button>
-                <button
-                  onClick={() => setFilter('completed')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    filter === 'completed'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Completed ({completedTodosCount})
-                </button>
-              </div>
-              {completedTodosCount > 0 && (
-                <button
-                  onClick={clearCompleted}
-                  className="px-4 py-2 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all"
-                >
-                  Clear Completed
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="divide-y divide-gray-100">
-            {loading ? (
-              <div className="p-8 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="mt-4">Loading tasks...</p>
-              </div>
-            ) : filteredTodos.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <Circle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-lg">
-                  {filter === 'completed'
-                    ? 'No completed tasks yet'
-                    : filter === 'active'
-                    ? 'No active tasks. Time to relax!'
-                    : 'No tasks yet. Add one to get started!'}
-                </p>
-              </div>
-            ) : (
-              filteredTodos.map(todo => (
-                <TodoItem
-                  key={todo.id}
-                  todo={todo}
-                  onToggle={toggleTodo}
-                  onDelete={deleteTodo}
-                />
-              ))
-            )}
-          </div>
-        </div>
-
-        {todos.length > 0 && (
-          <div className="text-center mt-6 text-sm text-gray-600">
-            {activeTodosCount === 0 ? (
-              <p className="font-medium text-green-600">All tasks completed!</p>
-            ) : (
-              <p>
-                {activeTodosCount} {activeTodosCount === 1 ? 'task' : 'tasks'} remaining
-              </p>
-            )}
-          </div>
-        )}
+      {/* HEADER */}
+      <div className="text-center mb-10">
+        <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          ✨ 2DO-List
+        </h1>
+        <p className="text-gray-600 mt-2 text-lg">
+          Stay productive. Stay organized.
+        </p>
       </div>
+
+      {/* INPUT CARD */}
+      <div className="bg-white backdrop-blur-xl rounded-3xl shadow-2xl p-6 mb-6 border border-gray-100">
+        <TodoInput onAdd={addTodo} />
+      </div>
+
+      {/* TODO LIST CARD */}
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+
+        {/* FILTER SECTION */}
+        <div className="p-5 border-b bg-gray-50 flex flex-wrap justify-between items-center gap-3">
+
+          <div className="flex gap-2">
+            {["all", "active", "completed"].map(type => (
+              <button
+                key={type}
+                onClick={() => setFilter(type)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                  filter === type
+                    ? "bg-indigo-600 text-white shadow-lg scale-105"
+                    : "bg-white text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {completedTodosCount > 0 && (
+            <button
+              onClick={clearCompleted}
+              className="text-sm font-medium text-red-500 hover:text-red-600 transition"
+            >
+              Clear Completed
+            </button>
+          )}
+        </div>
+
+        {/* LIST */}
+        <div className="divide-y">
+
+          {loading ? (
+            <div className="p-10 text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-4 text-gray-500">Loading tasks...</p>
+            </div>
+          ) : filteredTodos.length === 0 ? (
+            <div className="p-10 text-center text-gray-400">
+              <p className="text-lg font-medium">
+                No tasks found 🚀
+              </p>
+              <p className="text-sm mt-1">
+                Add a task to get started
+              </p>
+            </div>
+          ) : (
+            filteredTodos.map(todo => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                onToggle={toggleTodo}
+                onDelete={deleteTodo}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* FOOTER STATUS */}
+      {todos.length > 0 && (
+        <div className="text-center mt-6 text-gray-600 text-sm">
+          {activeTodosCount === 0 ? (
+            <span className="text-green-600 font-semibold">
+              🎉 All tasks completed!
+            </span>
+          ) : (
+            <span>
+              {activeTodosCount} task
+              {activeTodosCount !== 1 && "s"} remaining
+            </span>
+          )}
+        </div>
+      )}
+
     </div>
-  );
+  </div>
+);
 }
 
 export default App;
