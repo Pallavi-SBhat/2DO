@@ -48,9 +48,9 @@ function App() {
     }
   };
 
-  /* =========================
-     TOGGLE TODO
-  ========================= */
+  
+    //  TOGGLE TODO
+  
   const toggleTodo = async (id, completed) => {
     try {
       await fetch(`http://localhost:4000/api/todos/${id}`, {
@@ -71,9 +71,9 @@ function App() {
     }
   };
 
-  /* =========================
-     DELETE TODO
-  ========================= */
+  
+    //  DELETE TODO
+
   const deleteTodo = async (id) => {
     try {
       await fetch(`http://localhost:4000/api/todos/${id}`, {
@@ -86,9 +86,9 @@ function App() {
     }
   };
 
-  /* =========================
-     CLEAR COMPLETED
-  ========================= */
+
+    //  CLEAR COMPLETED
+ 
   const clearCompleted = async () => {
     const completedTodos = todos.filter((todo) => todo.completed);
 
@@ -104,10 +104,8 @@ function App() {
       console.error("Error clearing completed todos:", error);
     }
   };
-
-  /* =========================
-     FILTER LOGIC
-  ========================= */
+    //  FILTER LOGIC
+  
   const filteredTodos = todos.filter((todo) => {
     if (filter === "active") return !todo.completed;
     if (filter === "completed") return todo.completed;
