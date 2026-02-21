@@ -2,7 +2,11 @@ import { Check, Trash2 } from "lucide-react";
 
 function TodoItem({ todo, onToggle, onDelete }) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-all duration-200 group">
+    <div className="
+  flex items-center justify-between px-6 py-4
+  hover:bg-gray-50 dark:hover:bg-gray-700
+  transition-all duration-200 group
+">
 
       {/* LEFT SIDE */}
       <div className="flex items-center gap-4">
@@ -32,17 +36,17 @@ function TodoItem({ todo, onToggle, onDelete }) {
 
         {/* TASK TEXT */}
         <span
-          className={`
-            text-lg transition-all
-            ${
-              todo.completed
-                ? "line-through text-gray-400"
-                : "text-gray-800"
-            }
-          `}
-        >
-          {todo.title}
-        </span>
+  className={`
+    text-lg transition-all
+    ${
+      todo.completed
+        ? "line-through text-gray-400 dark:text-gray-500"
+        : "text-gray-800 dark:text-white"
+    }
+  `}
+>
+  {todo.title}
+</span>
       </div>
 
       {/* DELETE BUTTON */}
